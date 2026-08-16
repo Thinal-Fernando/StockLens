@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
+import NavItems from "./NavItems";
+import UserDropdown from "./UserDropdown";
 
 const Header = () => {
   return (
@@ -16,7 +18,10 @@ const Header = () => {
           />
           <span className="text-xl font-semibold text-white">StockLens</span>
         </Link>
-        <nav className="hidden sm:block"></nav>
+        <nav className="hidden sm:block">
+          <NavItems />
+        </nav>
+        <UserDropdown />
       </div>
     </header>
   );

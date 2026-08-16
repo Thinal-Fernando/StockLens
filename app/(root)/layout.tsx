@@ -1,4 +1,4 @@
-import Header from "@/components/header";
+import Header from "@/components/Header";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -10,5 +10,3 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 };
 
 export default Layout;
-
-
