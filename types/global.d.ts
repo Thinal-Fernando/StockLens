@@ -40,6 +40,12 @@ declare global {
     error?: FieldError;
     required?: boolean;
   };
+
+  type FooterLinkProps = {
+    text: string;
+    linkText: string;
+    href: string;
+  };
 }
 
 export {};
