@@ -3,15 +3,19 @@ import { CountrySelectField } from "@/components/forms/CountrySelectField";
 import FooterLink from "@/components/forms/FooterLink";
 import InputField from "@/components/forms/InputField";
 import SelectField from "@/components/forms/SelectField";
+import { signUpWithEmail } from "@/lib/actions/auth.actions";
 import {
   INVESTMENT_GOALS,
   PREFERRED_INDUSTRIES,
   RISK_TOLERANCE_OPTIONS,
 } from "@/lib/constants";
 import { Button } from "@base-ui/react";
+import { useRouter } from "next/navigation";
 import { SubmitHandler, useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 const SignUp = () => {
+  const router = useRouter();   // useRouter for client redirection
   const {
     register,
     handleSubmit,
@@ -31,9 +35,14 @@ const SignUp = () => {
   });
   const onSubmit = async (data: SignUpFormData) => {
     try {
-      console.log(data);
+      const result = await signUpWithEmail(data);     // onSubmit we call the signUpWithEmail function and pass the data and await the response
+      if (result.success) router.push("/");           // If the result(response of signUpWithEmail) is success:true then send the user to home page
     } catch (e) {
-      console.error(e);
+      console.error(e);                                        
+      toast.error("Sign Up failed", {                 // use a shadcn Sonner to show the error
+        description:
+          e instanceof Error ? e.message : "Failed to create an account",
+      });
     }
   };
   return (

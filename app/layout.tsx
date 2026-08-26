@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,7 +15,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "StockLens",
-  description: "Track real-time stock prices, get personalized alerts and explore detailed company insight",
+  description:
+    "Track real-time stock prices, get personalized alerts and explore detailed company insight",
 };
 
 export default function RootLayout({
@@ -27,6 +29,8 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
     >
+      {children}
+      <Toaster />
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
