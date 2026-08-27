@@ -1,10 +1,14 @@
 // this file contains the actual inngest background functions that gets triggered when a new user is created
 
 import { model } from "mongoose";
-import { inngest } from "./client";    
+import { inngest } from "./client";
 import { PERSONALIZED_WELCOME_EMAIL_PROMPT } from "./prompts";
 import { success } from "better-auth";
 import { sendWelcomeEmail } from "../nodemailer";
+import { auth } from "../auth/auth";
+
+// How long a "Try the demo" (anonymous) account is kept before it's purged.
+const DEMO_USER_TTL_MS = 24 * 60 * 60 * 1000;
 
 export const sendSignUpEmail = inngest.createFunction(                              // Creating a Inngest (background) function called sendSignUpEmail
   { id: "sign-up-email", triggers: [{ event: "app/user.created" }] },               // This object tells inngest how the function should behave (id-function identifier | triggers- this function runs when an app/user.created event occurs.)
@@ -52,5 +56,36 @@ export const sendSignUpEmail = inngest.createFunction(                          
       success: true,
       message: "welcome email send successfully",
     };
+  },
+);
+
+// Hourly sweep that deletes stale "Try the demo" accounts and everything
+// attached to them (sessions + accounts), so anonymous users don't pile up.
+export const cleanupDemoUsers = inngest.createFunction(
+  { id: "cleanup-demo-users", triggers: [{ cron: "0 * * * *" }] },
+  async ({ step }) => {
+    const deleted = await step.run("delete-stale-demo-users", async () => {
+      const ctx = await auth.$context;
+      const cutoff = new Date(Date.now() - DEMO_USER_TTL_MS);
+
+      const staleUsers = await ctx.adapter.findMany<{ id: string }>({
+        model: "user",
+        where: [
+          { field: "isAnonymous", value: true },
+          { field: "createdAt", operator: "lt", value: cutoff },
+        ],
+        limit: 500,
+      });
+
+      for (const user of staleUsers) {
+        await ctx.internalAdapter.deleteUserSessions(user.id);
+        await ctx.internalAdapter.deleteAccounts(user.id);
+        await ctx.internalAdapter.deleteUser(user.id);
+      }
+
+      return staleUsers.length;
+    });
+
+    return { deleted, message: `purged ${deleted} demo account(s)` };
   },
 );

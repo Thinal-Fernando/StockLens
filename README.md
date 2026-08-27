@@ -28,6 +28,7 @@ A full-stack stock market dashboard built with Next.js 16, MongoDB, Better Auth,
 ## Table of Contents
 
 - [Overview](#overview)
+- [Try It](#try-it)
 - [Features](#features)
 - [Tech Stack](#tech-stack)
 - [Architecture](#architecture)
@@ -60,11 +61,26 @@ and shadcn/ui, and deploys to Vercel.
 
 <br/>
 
+## 🚀 Try It
+
+No sign-up required. On the [sign-in page](https://stock-lens-omega.vercel.app/sign-in), click
+**"Explore the demo"** to enter with a temporary guest account and browse the full app.
+
+Under the hood this uses Better Auth's anonymous plugin to create a sandboxed, flagged session
+(`isAnonymous: true`). Demo accounts are rate-limited (5 per IP / hour), blocked from write actions
+via a `requireRealUser()` guard, and purged automatically after 24 hours by the `cleanup-demo-users`
+Inngest cron. If you later sign up for real, the guest session is linked to your new account.
+
+<br/>
+
 ## ✨ Features
 
 - **🔐 Authentication** :- Email/password sign-up and sign-in with Better Auth, backed by MongoDB.
   Session-aware layouts automatically redirect authenticated users away from auth pages and
   unauthenticated users to sign-in.
+- **🧪 One-click Demo Mode** :- A "Try the demo" button spins up a throwaway anonymous session
+  (Better Auth anonymous plugin) so visitors can explore without signing up; guest accounts are
+  rate-limited and swept hourly by an Inngest cron.
 - **📊 Market Dashboard** :- Live **Market Overview**, **Stock Heatmap**, **Top Stories**, and
   **Market Data** widgets embedded from TradingView.
 - **🏢 Stock Details Page** :- Symbol info, advanced candlestick chart,
@@ -87,7 +103,7 @@ and shadcn/ui, and deploys to Vercel.
 | **Language** | [TypeScript 5](https://www.typescriptlang.org/) |
 | **Styling** | [Tailwind CSS v4](https://tailwindcss.com/), [shadcn/ui](https://ui.shadcn.com/), [Base UI](https://base-ui.com/), [tw-animate-css](https://www.npmjs.com/package/tw-animate-css) |
 | **UI / UX** | [lucide-react](https://lucide.dev/), [Sonner](https://sonner.emilkowal.ski/) (toasts), [next-themes](https://github.com/pacocoursey/next-themes), [cmdk](https://cmdk.paco.me/) |
-| **Auth** | [Better Auth](https://www.better-auth.com/) (MongoDB adapter, Next.js cookies plugin) |
+| **Auth** | [Better Auth](https://www.better-auth.com/) (MongoDB adapter, Next.js cookies plugin, anonymous plugin for demo mode) |
 | **Database** | [MongoDB](https://www.mongodb.com/) via [Mongoose 9](https://mongoosejs.com/) (cached connection) |
 | **Background Jobs** | [Inngest](https://www.inngest.com/) (event-driven functions + AI inference step) |
 | **Forms** | [react-hook-form](https://react-hook-form.com/), [react-select-country-list](https://www.npmjs.com/package/react-select-country-list) |
@@ -146,6 +162,8 @@ flowchart TD
    and normalizes results to a common shape.
 4. **Charts** - Dashboard and stock-detail pages render TradingView embed widgets client-side via
    the `TradingViewWidget` component and `useTradingViewWidget` hook.
+5. **Demo mode** - `startDemoSession` calls `signInAnonymous`; the hourly `cleanup-demo-users`
+   Inngest cron deletes anonymous users (and their sessions/accounts) older than 24 hours.
 
 <br/>
 
@@ -261,6 +279,13 @@ npx inngest-cli@latest dev
 
 It auto-discovers the app at `http://localhost:3000/api/inngest`. Open the Inngest dev dashboard
 (usually [http://localhost:8288](http://localhost:8288)) to inspect events and function runs.
+
+Registered functions:
+
+| Function | Trigger | Purpose |
+| --- | --- | --- |
+| `sendSignUpEmail` | `app/user.created` event | Generate and send the AI-personalized welcome email. |
+| `cleanup-demo-users` | Cron `0 * * * *` | Delete anonymous demo accounts older than 24 hours. |
 
 <br/>
 

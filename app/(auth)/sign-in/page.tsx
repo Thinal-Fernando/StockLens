@@ -3,6 +3,7 @@ import { CountrySelectField } from "@/components/forms/CountrySelectField";
 import FooterLink from "@/components/forms/FooterLink";
 import InputField from "@/components/forms/InputField";
 import SelectField from "@/components/forms/SelectField";
+import DemoButton from "@/components/forms/DemoButton";
 import { signInWithEmail } from "@/lib/actions/auth.actions";
 import {
   INVESTMENT_GOALS,
@@ -73,6 +74,8 @@ const SignIn = () => {
           href="/sign-up"
         />
       </form>
+
+      <DemoButton />
     </>
   );
 };

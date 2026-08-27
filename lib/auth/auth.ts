@@ -1,7 +1,11 @@
-import { betterAuth } from "better-auth";   
+import { betterAuth } from "better-auth";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
+import { anonymous } from "better-auth/plugins";
 import { connectionToDatabase } from "@/database/mongoose";
 import { nextCookies } from "better-auth/next-js";
+
+// Synthetic email domain used for throwaway "Try the demo" accounts.
+export const DEMO_EMAIL_DOMAIN = "demo.stocklens.app";
 
 const createAuth = (db: Parameters<typeof mongodbAdapter>[0]) =>  // createAuth is a function that creates a Better Auth instance using the MongoDB database object(db)
   betterAuth({                      // Calling Better Auth to create configuration
@@ -15,7 +19,36 @@ const createAuth = (db: Parameters<typeof mongodbAdapter>[0]) =>  // createAuth 
       requireEmailVerification: false,
     },
 
-    plugins: [nextCookies()],   // a Better Auth plugin - A common way to keep track of Which user is currently logged in is using cookies.
+    // Throttle abuse of the throwaway demo login. `storage: "database"` keeps the
+    // limit consistent across serverless instances; rate limiting is only active
+    // in production (Better Auth default).
+    rateLimit: {
+      storage: "database",
+      customRules: {
+        "/sign-in/anonymous": { window: 3600, max: 5 }, // 5 demo sessions per IP / hour
+      },
+    },
+
+    databaseHooks: {
+      user: {
+        create: {
+          after: async (user) => {
+            // Demo (anonymous) users are created with an empty account. Seed any
+            // demo-only data here, keyed by `user.id`, once those models exist.
+            if ((user as { isAnonymous?: boolean }).isAnonymous) {
+              // await seedDemoData(user.id);
+            }
+          },
+        },
+      },
+    },
+
+    // `nextCookies()` MUST stay last so it can flush Set-Cookie headers from
+    // server actions (e.g. the demo sign-in).
+    plugins: [
+      anonymous({ emailDomainName: DEMO_EMAIL_DOMAIN }),
+      nextCookies(),
+    ],
   });
 
 let authInstance: ReturnType<typeof createAuth> | null = null; // create a variable called authInstance and initially set it to null - if we haven't created Better Auth yet
