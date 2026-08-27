@@ -77,6 +77,7 @@ export const searchStocks = cache(
             // To keep pipeline simple, attach exchange via closure map stage
             // We'll reconstruct exchange when mapping to final type
             (r as any).__exchange = exchange; // internal only
+            (r as any).__logo = profile?.logo || undefined; // real logo from profile2
             return r;
           })
           .filter((x): x is FinnhubSearchResult => Boolean(x));
@@ -97,11 +98,15 @@ export const searchStocks = cache(
             | undefined;
           const exchange = exchangeFromDisplay || exchangeFromProfile || "US";
           const type = r.type || "Stock";
+          const logo =
+            ((r as any).__logo as string | undefined) ||
+            `https://assets.parqet.com/logos/symbol/${upper}?format=png`;
           const item: StockWithWatchlistStatus = {
             symbol: upper,
             name,
             exchange,
             type,
+            logo,
             isInWatchlist: false,
           };
           return item;

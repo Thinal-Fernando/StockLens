@@ -9,8 +9,9 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
-import { Loader2, TrendingUp } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import Link from "next/link";
+import StockLogo from "@/components/StockLogo";
 import { searchStocks } from "@/lib/actions/finnhub.actions";
 import { useDebounce } from "@/hooks/useDebounce";
 
@@ -57,11 +58,6 @@ export default function SearchCommand({
 
   useEffect(() => {
     debouncedSearch();
-  }, [searchTerm]);
-
-  useEffect(() => {
-    const id = setTimeout(handleSearch, 300);
-    return () => clearTimeout(id);
   }, [searchTerm]);
 
   const handleSelectStock = () => {
@@ -118,7 +114,7 @@ export default function SearchCommand({
                       onClick={handleSelectStock}
                       className="search-item-link"
                     >
-                      <TrendingUp className="h-4 w-4 text-gray-500" />
+                      <StockLogo src={stock.logo} alt={stock.name} />
                       <div className="flex-1">
                         <div className="search-item-name">{stock.name}</div>
                         <div className="text-sm text-gray-500">
