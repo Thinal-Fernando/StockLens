@@ -3,7 +3,7 @@ import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { connectionToDatabase } from "@/database/mongoose";
 import { nextCookies } from "better-auth/next-js";
 
-const createAuth = (db: any) =>  // createAuth is a function that creates a Better Auth instance using the MongoDB database object(db)
+const createAuth = (db: Parameters<typeof mongodbAdapter>[0]) =>  // createAuth is a function that creates a Better Auth instance using the MongoDB database object(db)
   betterAuth({                      // Calling Better Auth to create configuration
     database: mongodbAdapter(db),    // Tell Better Auth to use MongoDB as the database and give it the db it should use (mongodbAdapter translates Better Auth's database operations into MongoDB operations.)
 

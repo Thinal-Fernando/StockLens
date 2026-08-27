@@ -7,6 +7,19 @@ const FINNHUB_BASE_URL = "https://finnhub.io/api/v1";
 const NEXT_PUBLIC_FINNHUB_API_KEY =
   process.env.NEXT_PUBLIC_FINNHUB_API_KEY ?? "";
 
+type Profile2 = {
+  name?: string;
+  ticker?: string;
+  exchange?: string;
+  logo?: string;
+};
+
+// FinnhubSearchResult plus two fields we stash internally while building results
+type EnrichedResult = FinnhubSearchResult & {
+  __exchange?: string;
+  __logo?: string;
+};
+
 async function fetchJSON<T>(
   url: string,
   revalidateSeconds?: number,
@@ -41,23 +54,27 @@ export const searchStocks = cache(
 
       const trimmed = typeof query === "string" ? query.trim() : "";
 
-      let results: FinnhubSearchResult[] = [];
+      let results: EnrichedResult[] = [];
 
       if (!trimmed) {
         // Fetch top 10 popular symbols' profiles
         const top = POPULAR_STOCK_SYMBOLS.slice(0, 10);
         const profiles = await Promise.all(
-          top.map(async (sym) => {
-            try {
-              const url = `${FINNHUB_BASE_URL}/stock/profile2?symbol=${encodeURIComponent(sym)}&token=${token}`;
-              // Revalidate every hour
-              const profile = await fetchJSON<any>(url, 3600);
-              return { sym, profile } as { sym: string; profile: any };
-            } catch (e) {
-              console.error("Error fetching profile2 for", sym, e);
-              return { sym, profile: null } as { sym: string; profile: any };
-            }
-          }),
+          top.map(
+            async (
+              sym,
+            ): Promise<{ sym: string; profile: Profile2 | null }> => {
+              try {
+                const url = `${FINNHUB_BASE_URL}/stock/profile2?symbol=${encodeURIComponent(sym)}&token=${token}`;
+                // Revalidate every hour
+                const profile = await fetchJSON<Profile2>(url, 3600);
+                return { sym, profile };
+              } catch (e) {
+                console.error("Error fetching profile2 for", sym, e);
+                return { sym, profile: null };
+              }
+            },
+          ),
         );
 
         results = profiles
@@ -67,7 +84,7 @@ export const searchStocks = cache(
               profile?.name || profile?.ticker || undefined;
             const exchange: string | undefined = profile?.exchange || undefined;
             if (!name) return undefined;
-            const r: FinnhubSearchResult = {
+            const r: EnrichedResult = {
               symbol,
               description: name,
               displaySymbol: symbol,
@@ -76,11 +93,11 @@ export const searchStocks = cache(
             // We don't include exchange in FinnhubSearchResult type, so carry via mapping later using profile
             // To keep pipeline simple, attach exchange via closure map stage
             // We'll reconstruct exchange when mapping to final type
-            (r as any).__exchange = exchange; // internal only
-            (r as any).__logo = profile?.logo || undefined; // real logo from profile2
+            r.__exchange = exchange; // internal only
+            r.__logo = profile?.logo || undefined; // real logo from profile2
             return r;
           })
-          .filter((x): x is FinnhubSearchResult => Boolean(x));
+          .filter((x): x is EnrichedResult => Boolean(x));
       } else {
         const url = `${FINNHUB_BASE_URL}/search?q=${encodeURIComponent(trimmed)}&token=${token}`;
         const data = await fetchJSON<FinnhubSearchResponse>(url, 1800);
@@ -93,13 +110,11 @@ export const searchStocks = cache(
           const name = r.description || upper;
           const exchangeFromDisplay =
             (r.displaySymbol as string | undefined) || undefined;
-          const exchangeFromProfile = (r as any).__exchange as
-            | string
-            | undefined;
+          const exchangeFromProfile = r.__exchange;
           const exchange = exchangeFromDisplay || exchangeFromProfile || "US";
           const type = r.type || "Stock";
           const logo =
-            ((r as any).__logo as string | undefined) ||
+            r.__logo ||
             `https://assets.parqet.com/logos/symbol/${upper}?format=png`;
           const item: StockWithWatchlistStatus = {
             symbol: upper,
