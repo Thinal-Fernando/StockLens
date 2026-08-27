@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 
 const Layout = async ({ children }: { children: React.ReactNode }) => {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await auth.api.getSession({ headers: await headers() });   // checks if the request is comming from a logged in user  (auth is the better-auth instance, Better Auth provides an API called: api. Inside that API are authentication-related operations.once of those ops, is getSession())
 
   if (!session?.user) redirect("/sign-in");
 
