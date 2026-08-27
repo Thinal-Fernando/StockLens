@@ -1,5 +1,5 @@
 import { inngest } from "@/lib/inngest/client";                // inngest(from client.ts) - application's connection/configuration for talking to Inngest.
-import { sendSignUpEmail } from "@/lib/inngest/functions";
+import { sendSignUpEmail, cleanupDemoUsers } from "@/lib/inngest/functions";
 import { serve } from "inngest/next";                          //serve() essentially creates the HTTP handlers that Inngest needs to communicate with the application.
 
 
@@ -10,5 +10,5 @@ import { serve } from "inngest/next";                          //serve() essenti
 // We export these handlers so Next.js knows how to handle GET, POST, and PUT requests sent to this `/api/inngest` route.
 export const { GET, POST, PUT } = serve({
   client: inngest,
-  functions: [sendSignUpEmail],
+  functions: [sendSignUpEmail, cleanupDemoUsers],
 });
