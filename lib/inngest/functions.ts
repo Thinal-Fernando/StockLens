@@ -6,6 +6,8 @@ import { PERSONALIZED_WELCOME_EMAIL_PROMPT } from "./prompts";
 import { success } from "better-auth";
 import { sendWelcomeEmail } from "../nodemailer";
 import { auth } from "../auth/auth";
+import { connectionToDatabase } from "@/database/mongoose";
+import { Watchlist } from "@/database/models/watchlist.model";
 
 // How long a "Try the demo" (anonymous) account is kept before it's purged.
 const DEMO_USER_TTL_MS = 24 * 60 * 60 * 1000;
@@ -77,13 +79,20 @@ export const cleanupDemoUsers = inngest.createFunction(
         limit: 500,
       });
 
-      for (const user of staleUsers) {
-        await ctx.internalAdapter.deleteUserSessions(user.id);
-        await ctx.internalAdapter.deleteAccounts(user.id);
-        await ctx.internalAdapter.deleteUser(user.id);
+      const ids = staleUsers.map((user) => user.id);
+      if (ids.length === 0) return 0;
+
+      // App data keyed by userId that Better Auth's adapter doesn't know about.
+      await connectionToDatabase();
+      await Watchlist.deleteMany({ userId: { $in: ids } });
+
+      for (const id of ids) {
+        await ctx.internalAdapter.deleteUserSessions(id);
+        await ctx.internalAdapter.deleteAccounts(id);
+        await ctx.internalAdapter.deleteUser(id);
       }
 
-      return staleUsers.length;
+      return ids.length;
     });
 
     return { deleted, message: `purged ${deleted} demo account(s)` };

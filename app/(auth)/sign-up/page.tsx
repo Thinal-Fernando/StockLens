@@ -13,13 +13,13 @@ import {
 import { Button } from "@base-ui/react";
 import { useRouter } from "next/navigation";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { toast } from "sonner";
 
 const SignUp = () => {
   const router = useRouter();   // useRouter for client redirection
   const {
     register,
     handleSubmit,
+    setError,
     control,
     formState: { errors, isSubmitting },
   } = useForm<SignUpFormData>({
@@ -37,13 +37,19 @@ const SignUp = () => {
   const onSubmit = async (data: SignUpFormData) => {
     try {
       const result = await signUpWithEmail(data);     // onSubmit we call the signUpWithEmail function and pass the data and await the response
-      if (result.success) router.push("/");           // If the result(response of signUpWithEmail) is success:true then send the user to home page
+      if (result.success) {
+        router.push("/");                             // success -> go to the dashboard
+        return;
+      }
+      // Show "email already exists" under the email input, anything else above the button.
+      if (result.field === "email") {
+        setError("email", { message: result.error });
+      } else {
+        setError("root", { message: result.error });
+      }
     } catch (e) {
-      console.error(e);                                        
-      toast.error("Sign Up failed", {                 // use a shadcn Sonner to show the error
-        description:
-          e instanceof Error ? e.message : "Failed to create an account",
-      });
+      console.error(e);
+      setError("root", { message: "Something went wrong. Please try again." });
     }
   };
   return (
@@ -116,6 +122,10 @@ const SignUp = () => {
           error={errors.preferredIndustry}
           required
         />
+
+        {errors.root?.message && (
+          <p className="text-sm text-red-500">{errors.root.message}</p>
+        )}
 
         <Button
           type="submit"

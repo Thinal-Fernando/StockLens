@@ -1,5 +1,6 @@
 import TradingViewWidget from "@/components/TradingViewWidget";
 import WatchlistButton from "@/components/WatchlistButton";
+import { isInWatchlist } from "@/lib/actions/watchlist.actions";
 import {
   SYMBOL_INFO_WIDGET_CONFIG,
   CANDLE_CHART_WIDGET_CONFIG,
@@ -13,6 +14,7 @@ const scriptUrl = "https://s3.tradingview.com/external-embedding/embed-widget-";
 
 export default async function StockDetails({ params }: StockDetailsPageProps) {
   const { symbol } = await params;
+  const inWatchlist = await isInWatchlist(symbol);
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -38,7 +40,7 @@ export default async function StockDetails({ params }: StockDetailsPageProps) {
         <WatchlistButton
           symbol={symbol.toUpperCase()}
           company={symbol.toUpperCase()}
-          isInWatchlist={false}
+          isInWatchlist={inWatchlist}
         />
         <TradingViewWidget
           scriptUrl={`${scriptUrl}technical-analysis.js`}

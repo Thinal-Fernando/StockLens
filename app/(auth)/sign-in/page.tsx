@@ -19,6 +19,7 @@ const SignIn = () => {
   const {
     register,
     handleSubmit,
+    setError,
     control,
     formState: { errors, isSubmitting },
   } = useForm<SignInFormData>({
@@ -31,14 +32,19 @@ const SignIn = () => {
   const onSubmit = async (data: SignInFormData) => {
     try {
       const result = await signInWithEmail(data);
-      if (result.success) router.push("/");
+      if (result.success) {
+        router.push("/");
+        return;
+      }
+      setError("root", { message: result.error });
     } catch (e) {
       console.error(e);
+      setError("root", { message: "Something went wrong. Please try again." });
     }
   };
   return (
     <>
-      <h1 className="form-title">Sign Up & Personalize</h1>
+      <h1 className="form-title">Log In to Your Account</h1>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <InputField
@@ -59,6 +65,10 @@ const SignIn = () => {
           error={errors.password}
           validation={{ required: "Password is required", minLength: 8 }}
         />
+
+        {errors.root?.message && (
+          <p className="text-sm text-red-500">{errors.root.message}</p>
+        )}
 
         <Button
           type="submit"

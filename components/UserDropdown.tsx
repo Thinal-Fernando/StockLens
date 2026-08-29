@@ -49,21 +49,19 @@ const UserDropdown = ({ user }: { user: User }) => {
         </span>
         <span className="hidden sm:inline">{user.name}</span>
       </DropdownMenuTrigger>
-      <DropdownMenuContent>
+      <DropdownMenuContent
+        align="end"
+        className="w-auto min-w-56 max-w-[calc(100vw-1rem)]"
+      >
         <DropdownMenuGroup>
           <DropdownMenuLabel className="text-sm text-white pb-0">
             {user.name}
           </DropdownMenuLabel>
-          <DropdownMenuLabel className="pt-0">{user.email}</DropdownMenuLabel>
+          <DropdownMenuLabel className="pt-0 break-all">
+            {user.email}
+          </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>Profile</DropdownMenuItem>
-          <DropdownMenuItem>Billing</DropdownMenuItem>
         </DropdownMenuGroup>
-        <DropdownMenuGroup>
-          <DropdownMenuItem>Team</DropdownMenuItem>
-          <DropdownMenuItem>Subscription</DropdownMenuItem>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={handleSignOut}
           className=" focus:bg-transparent text-gray-50 focus:text-red-500 transition-colors cursor-pointer"

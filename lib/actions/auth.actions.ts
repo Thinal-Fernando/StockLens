@@ -1,13 +1,36 @@
 "use server"; // to run on the server, not in the browser cause it handles sensitive info
 
-import { success } from "better-auth";
-import { error } from "console";
 import { auth } from "@/lib/auth/auth";
 import { inngest } from "../inngest/client";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-export const signUpWithEmail = async (data: SignUpFormData) => {
+// Which input a failed auth attempt should attach its message to on the client.
+type AuthErrorField = "email" | "password" | "root";
+
+type AuthActionResult =
+  | { success: true; data: unknown }
+  | { success: false; error: string; field: AuthErrorField };
+
+// Better Auth throws a `better-call` APIError: `.message` is the human string and
+// `.body.code` is a stable identifier (e.g. "USER_ALREADY_EXISTS").
+const readAuthError = (e: unknown): { message: string; code?: string } => {
+  const err = e as {
+    body?: { message?: string; code?: string };
+    message?: string;
+  };
+  return {
+    message:
+      err?.body?.message ||
+      err?.message ||
+      "Something went wrong. Please try again.",
+    code: err?.body?.code,
+  };
+};
+
+export const signUpWithEmail = async (
+  data: SignUpFormData,
+): Promise<AuthActionResult> => {
   try {
     const response = await auth.api.signUpEmail({
       // calling Better Auth's signup API. and telling it to create a new user using email/password authentication
@@ -31,7 +54,17 @@ export const signUpWithEmail = async (data: SignUpFormData) => {
     return { success: true, data: response };
   } catch (e) {
     console.log("sign up failed", e);
-    return { success: false, error: "Sign up failed" };
+    const { message, code } = readAuthError(e);
+    const emailTaken =
+      Boolean(code?.startsWith("USER_ALREADY_EXISTS")) ||
+      /already exists|already registered/i.test(message);
+    return {
+      success: false,
+      error: emailTaken
+        ? "An account with this email already exists."
+        : message,
+      field: emailTaken ? "email" : "root",
+    };
   }
 };
 
@@ -44,7 +77,9 @@ export const signOut = async () => {
   }
 };
 
-export const signInWithEmail = async (data: SignInFormData) => {
+export const signInWithEmail = async (
+  data: SignInFormData,
+): Promise<AuthActionResult> => {
   try {
     const response = await auth.api.signInEmail({
       body: { email: data.email, password: data.password },
@@ -53,7 +88,13 @@ export const signInWithEmail = async (data: SignInFormData) => {
     return { success: true, data: response };
   } catch (e) {
     console.log("sign in failed", e);
-    return { success: false, error: "Sign in failed" };
+    const { message } = readAuthError(e);
+    return {
+      success: false,
+      // Sign-in failures are deliberately vague (don't leak which field is wrong).
+      error: message || "Invalid email or password.",
+      field: "root",
+    };
   }
 };
 
