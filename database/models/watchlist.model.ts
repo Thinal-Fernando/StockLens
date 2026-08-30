@@ -4,6 +4,7 @@ export interface WatchlistItem {
   userId: string; // Better Auth user id
   symbol: string;
   company: string;
+  market: Market;
   addedAt: Date;
 }
 
@@ -11,6 +12,7 @@ const WatchlistSchema = new Schema<WatchlistItem>({
   userId: { type: String, required: true, index: true },
   symbol: { type: String, required: true, uppercase: true, trim: true },
   company: { type: String, required: true, trim: true },
+  market: { type: String, enum: ["US", "CSE"], default: "US", required: true },
   addedAt: { type: Date, default: Date.now },
 });
 

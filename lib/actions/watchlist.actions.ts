@@ -6,8 +6,10 @@ import { auth } from "@/lib/auth/auth";
 import { connectionToDatabase } from "@/database/mongoose";
 import { Watchlist } from "@/database/models/watchlist.model";
 import { fetchJSON } from "@/lib/actions/finnhub.actions";
+import { getCseTradeSummary } from "@/lib/actions/cse.actions";
 import {
   formatChangePercent,
+  formatMarketCap,
   formatMarketCapValue,
   formatPrice,
 } from "@/lib/utils";
@@ -59,6 +61,7 @@ export const isInWatchlist = async (symbol: string): Promise<boolean> => {
 export const addToWatchlist = async (
   symbol: string,
   company: string,
+  market: Market = "US",
 ): Promise<ActionResult> => {
   const userId = await currentUserId();
   if (!userId) return { success: false, error: "You need to be signed in." };
@@ -75,6 +78,7 @@ export const addToWatchlist = async (
           userId,
           symbol: sym,
           company: company?.trim() || sym,
+          market,
           addedAt: new Date(),
         },
       },
@@ -116,19 +120,51 @@ export const getWatchlistWithData = async (): Promise<StockWithData[]> => {
   try {
     await connectionToDatabase();
     const rows = await Watchlist.find({ userId }).sort({ addedAt: -1 }).lean<
-      { symbol: string; company: string; addedAt: Date }[]
+      { symbol: string; company: string; market?: Market; addedAt: Date }[]
     >();
 
     const token = finnhubToken();
 
+    // CSE rows are all served by one market-wide call, so fetch it once up
+    // front rather than per row — and only when a CSE row actually exists.
+    const hasCse = rows.some((r) => r.market === "CSE");
+    const cseBySymbol = new Map<string, CseTradeSummaryItem>();
+    if (hasCse) {
+      for (const item of await getCseTradeSummary()) {
+        if (item.symbol) cseBySymbol.set(item.symbol.toUpperCase(), item);
+      }
+    }
+
     return await Promise.all(
       rows.map(async (row): Promise<StockWithData> => {
+        const market: Market = row.market === "CSE" ? "CSE" : "US";
         const base: StockWithData = {
           userId,
           symbol: row.symbol,
           company: row.company,
+          market,
           addedAt: row.addedAt,
         };
+
+        if (market === "CSE") {
+          const item = cseBySymbol.get(row.symbol.toUpperCase());
+          if (!item) return base;
+
+          const currentPrice = item.price ?? item.closingPrice ?? undefined;
+          const changePercent = item.percentageChange ?? undefined;
+
+          return {
+            ...base,
+            currentPrice: currentPrice ?? undefined,
+            changePercent: changePercent ?? undefined,
+            priceFormatted: formatPrice(currentPrice, "LKR"),
+            changeFormatted: formatChangePercent(changePercent),
+            marketCap: formatMarketCap(item.marketCap, "LKR"),
+            // CSE publishes no earnings multiple in this feed.
+            peRatio: "—",
+          };
+        }
+
         if (!token) return base;
 
         try {

@@ -1,13 +1,13 @@
 import { Star } from "lucide-react";
 import SearchCommand from "@/components/SearchCommand";
 import WatchlistTable from "@/components/WatchlistTable";
-import { searchStocks } from "@/lib/actions/finnhub.actions";
+import { searchAllStocks } from "@/lib/actions/search.actions";
 import { getWatchlistWithData } from "@/lib/actions/watchlist.actions";
 
 export default async function WatchlistPage() {
   const [watchlist, initialStocks] = await Promise.all([
     getWatchlistWithData(),
-    searchStocks(),
+    searchAllStocks(),
   ]);
 
   if (watchlist.length === 0) {

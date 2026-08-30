@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
+import { cn, stockHref } from "@/lib/utils";
 import { WATCHLIST_TABLE_HEADER } from "@/lib/constants";
 import { removeFromWatchlist } from "@/lib/actions/watchlist.actions";
 
@@ -53,14 +53,19 @@ export default function WatchlistTable({ watchlist }: WatchlistTableProps) {
               <tr key={stock.symbol} className="table-row">
                 <td className="table-cell px-4 py-3">
                   <Link
-                    href={`/stocks/${stock.symbol}`}
+                    href={stockHref(stock.symbol, stock.market)}
                     className="hover:text-yellow-500 transition-colors"
                   >
                     {stock.company}
                   </Link>
                 </td>
                 <td className="table-cell px-4 py-3 text-gray-400">
-                  {stock.symbol}
+                  <span className="inline-flex items-center gap-2">
+                    {stock.symbol}
+                    {stock.market === "CSE" && (
+                      <span className="market-tag">CSE</span>
+                    )}
+                  </span>
                 </td>
                 <td className="table-cell px-4 py-3">
                   {stock.priceFormatted ?? "—"}
