@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <style>
+    .ground { fill: #f4efe6; }
+    .mark   { stroke: #2e6e8e; fill: none; }
+    .solid  { fill: #2e6e8e; stroke: none; }
+    @media (prefers-color-scheme: dark) {
+      .ground { fill: #16202a; }
+      .mark   { stroke: #82b2cc; }
+      .solid  { fill: #82b2cc; }
+    }
+  </style>
+
+  <rect class="ground" width="48" height="48"/>
+
+  <!-- Heavier than the in-app rose: hairlines disappear at 16px -->
+  <circle class="mark" cx="24" cy="24" r="18" stroke-width="2"/>
+
+  <!-- North filled, the other three cardinals hollow -->
+  <path class="solid" d="M24 3 L28.4 21.4 L24 25 L19.6 21.4 Z"/>
+  <path class="mark" d="M24 45 L19.6 26.6 L24 23 L28.4 26.6 Z" stroke-width="2" stroke-linejoin="round"/>
+  <path class="mark" d="M45 24 L26.6 28.4 L23 24 L26.6 19.6 Z" stroke-width="2" stroke-linejoin="round"/>
+  <path class="mark" d="M3 24 L21.4 19.6 L25 24 L21.4 28.4 Z" stroke-width="2" stroke-linejoin="round"/>
+
+  <circle class="solid" cx="24" cy="24" r="2.6"/>
+</svg>
