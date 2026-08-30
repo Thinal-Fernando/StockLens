@@ -39,7 +39,7 @@ export default function CseIndexCard({
       <p
         className={cn(
           "cse-card-change",
-          isUp ? "text-green-500" : "text-red-500",
+          isUp ? "text-rising" : "text-falling",
         )}
       >
         {isUp ? "+" : ""}

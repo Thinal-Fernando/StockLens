@@ -15,8 +15,19 @@ export default function StockLogo({
 }) {
   const [failed, setFailed] = useState(false);
 
+  // No mark on file: a survey station with nothing plotted in it
   if (!src || failed) {
-    return <TrendingUp className={cn("h-4 w-4 text-gray-500", className)} />;
+    return (
+      <span
+        aria-hidden="true"
+        className={cn(
+          "flex size-6 shrink-0 items-center justify-center border border-rule-strong text-ink-3",
+          className,
+        )}
+      >
+        <TrendingUp className="size-3.5" />
+      </span>
+    );
   }
 
   return (
@@ -26,7 +37,10 @@ export default function StockLogo({
       alt={alt}
       loading="lazy"
       onError={() => setFailed(true)}
-      className={cn("h-5 w-5 rounded-full object-contain bg-white", className)}
+      className={cn(
+        "size-6 shrink-0 border border-rule bg-paper object-contain p-0.5",
+        className,
+      )}
     />
   );
 }

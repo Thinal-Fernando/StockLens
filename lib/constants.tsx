@@ -37,23 +37,33 @@ export const CONDITION_OPTIONS = [
   { value: "less", label: "Less than (<)" },
 ];
 
-// TradingView Charts
+// The chart's own ink, in the flat hex TradingView's config accepts
+export const PLATE_INK = {
+  water: "#2e6e8e",
+  rising: "#2c6b52",
+  falling: "#9c4526",
+  accent: "#1f63d6",
+  scale: "#5b6b72",
+  shoal: "rgba(46, 110, 142, 0.14)",
+  shoalFoot: "rgba(46, 110, 142, 0)",
+} as const;
+
 export const MARKET_OVERVIEW_WIDGET_CONFIG = {
-  colorTheme: "dark", // dark mode
+  colorTheme: "light",
   dateRange: "12M", // last 12 months
   locale: "en", // language
   largeChartUrl: "", // link to a large chart if needed
-  isTransparent: true, // makes background transparent
+  isTransparent: true, // the plate behind it is ours
   showFloatingTooltip: true, // show tooltip on hover
-  plotLineColorGrowing: "#0FEDBE", // line color when price goes up
-  plotLineColorFalling: "#0FEDBE", // line color when price falls
-  gridLineColor: "rgba(240, 243, 250, 0)", // grid line color
-  scaleFontColor: "#DBDBDB", // font color for scale
-  belowLineFillColorGrowing: "rgba(41, 98, 255, 0.12)", // fill under line when growing
-  belowLineFillColorFalling: "rgba(41, 98, 255, 0.12)", // fill under line when falling
-  belowLineFillColorGrowingBottom: "rgba(41, 98, 255, 0)",
-  belowLineFillColorFallingBottom: "rgba(41, 98, 255, 0)",
-  symbolActiveColor: "rgba(15, 237, 190, 0.05)", // highlight color for active symbol
+  plotLineColorGrowing: PLATE_INK.rising,
+  plotLineColorFalling: PLATE_INK.falling,
+  gridLineColor: "rgba(20, 24, 26, 0.10)",
+  scaleFontColor: PLATE_INK.scale,
+  belowLineFillColorGrowing: PLATE_INK.shoal,
+  belowLineFillColorFalling: PLATE_INK.shoal,
+  belowLineFillColorGrowingBottom: PLATE_INK.shoalFoot,
+  belowLineFillColorFallingBottom: PLATE_INK.shoalFoot,
+  symbolActiveColor: "rgba(31, 99, 214, 0.08)", // the day accent
   tabs: [
     {
       title: "Financial",
@@ -89,7 +99,7 @@ export const MARKET_OVERVIEW_WIDGET_CONFIG = {
     },
   ],
   support_host: "https://www.tradingview.com", // TradingView host
-  backgroundColor: "#141414", // background color
+  backgroundColor: "#faf6ec", // background color
   width: "100%", // full width
   height: 600, // height in px
   showSymbolLogo: true, // show logo next to symbols
@@ -104,7 +114,7 @@ export const HEATMAP_WIDGET_CONFIG = {
   isTransparent: true,
   locale: "en",
   symbolUrl: "",
-  colorTheme: "dark",
+  colorTheme: "light",
   exchanges: [],
   hasTopBar: false,
   isDataSetEnabled: false,
@@ -118,7 +128,7 @@ export const HEATMAP_WIDGET_CONFIG = {
 export const TOP_STORIES_WIDGET_CONFIG = {
   displayMode: "regular",
   feedMode: "market",
-  colorTheme: "dark",
+  colorTheme: "light",
   isTransparent: true,
   locale: "en",
   market: "stock",
@@ -132,9 +142,9 @@ export const MARKET_DATA_WIDGET_CONFIG = {
   height: 600,
   locale: "en",
   showSymbolLogo: true,
-  colorTheme: "dark",
-  isTransparent: false,
-  backgroundColor: "#0F0F0F",
+  colorTheme: "light",
+  isTransparent: true,
+  backgroundColor: "#faf6ec",
   symbolsGroups: [
     {
       name: "Financial",
@@ -173,7 +183,7 @@ export const MARKET_DATA_WIDGET_CONFIG = {
 
 export const SYMBOL_INFO_WIDGET_CONFIG = (symbol: string) => ({
   symbol: symbol.toUpperCase(),
-  colorTheme: "dark",
+  colorTheme: "light",
   isTransparent: true,
   locale: "en",
   width: "100%",
@@ -194,10 +204,10 @@ export const CANDLE_CHART_WIDGET_CONFIG = (symbol: string) => ({
   save_image: false,
   style: 1,
   symbol: symbol.toUpperCase(),
-  theme: "dark",
+  theme: "light",
   timezone: "Etc/UTC",
-  backgroundColor: "#141414",
-  gridColor: "#141414",
+  backgroundColor: "#faf6ec",
+  gridColor: "#e2dccd",
   watchlist: [],
   withdateranges: false,
   compareSymbols: [],
@@ -220,10 +230,10 @@ export const BASELINE_WIDGET_CONFIG = (symbol: string) => ({
   save_image: false,
   style: 10,
   symbol: symbol.toUpperCase(),
-  theme: "dark",
+  theme: "light",
   timezone: "Etc/UTC",
-  backgroundColor: "#141414",
-  gridColor: "#141414",
+  backgroundColor: "#faf6ec",
+  gridColor: "#e2dccd",
   watchlist: [],
   withdateranges: false,
   compareSymbols: [],
@@ -234,7 +244,7 @@ export const BASELINE_WIDGET_CONFIG = (symbol: string) => ({
 
 export const TECHNICAL_ANALYSIS_WIDGET_CONFIG = (symbol: string) => ({
   symbol: symbol.toUpperCase(),
-  colorTheme: "dark",
+  colorTheme: "light",
   isTransparent: "true",
   locale: "en",
   width: "100%",
@@ -245,7 +255,7 @@ export const TECHNICAL_ANALYSIS_WIDGET_CONFIG = (symbol: string) => ({
 
 export const COMPANY_PROFILE_WIDGET_CONFIG = (symbol: string) => ({
   symbol: symbol.toUpperCase(),
-  colorTheme: "dark",
+  colorTheme: "light",
   isTransparent: "true",
   locale: "en",
   width: "100%",
@@ -254,7 +264,7 @@ export const COMPANY_PROFILE_WIDGET_CONFIG = (symbol: string) => ({
 
 export const COMPANY_FINANCIALS_WIDGET_CONFIG = (symbol: string) => ({
   symbol: symbol.toUpperCase(),
-  colorTheme: "dark",
+  colorTheme: "light",
   isTransparent: "true",
   locale: "en",
   width: "100%",
@@ -339,11 +349,9 @@ export const WATCHLIST_TABLE_HEADER = [
   "Action",
 ];
 
-/**
- * CSE's own (undocumented, unauthenticated) JSON API. Every endpoint is
- * POST-only — a GET returns 405 — takes form-encoded bodies, and requires the
- * headers below. It sends no CORS headers, so these calls are server-only.
- */
+// CSE's own (undocumented, unauthenticated) JSON API. Every endpoint is POST-
+// only — a GET returns 405 — takes form-encoded bodies, and requires the
+// headers below
 export const CSE_API_BASE = "https://www.cse.lk/api";
 
 export const CSE_REQUEST_HEADERS: Record<string, string> = {
@@ -354,10 +362,10 @@ export const CSE_REQUEST_HEADERS: Record<string, string> = {
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
 };
 
-/** `logoUrl` fields are relative to this CDN. www.cse.lk/cmt/… 404s. */
+// `logoUrl` fields are relative to this CDN. www.cse.lk/cmt/… 404s
 export const CSE_LOGO_BASE = "https://cdn.cse.lk/cmt/";
 
-/** Colombo trades 09:30–14:30 local (UTC+5:30), Mon–Fri. */
+// Colombo trades 09:30–14:30 local (UTC+5:30), Mon–Fri
 export const CSE_TIMEZONE = "Asia/Colombo";
 
 export const CSE_MARKET_TABLE_HEADER = [

@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Select,
   SelectContent,
@@ -7,9 +6,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Label } from "../ui/label";
 import { Controller } from "react-hook-form";
 
+// A detented choice. The trigger is ruled like every other blank on the form,
+// and the open list is a plate, not a floating rounded panel
 const SelectField = ({
   name,
   label,
@@ -20,10 +20,10 @@ const SelectField = ({
   required = false,
 }: SelectFieldProps) => {
   return (
-    <div className="space-y-2">
-      <Label htmlFor={name} className="form-label">
+    <div>
+      <label htmlFor={name} className="apparatus mb-1.5 block text-ink">
         {label}
-      </Label>
+      </label>
 
       <Controller
         name={name}
@@ -33,16 +33,21 @@ const SelectField = ({
         }}
         render={({ field }) => (
           <Select value={field.value} onValueChange={field.onChange}>
-            <SelectTrigger className="select-trigger">
+            <SelectTrigger
+              id={name}
+              aria-invalid={error ? "true" : undefined}
+              className="h-auto w-full border-0 border-b border-rule-strong bg-transparent px-0.5 py-2.5 font-sans text-[0.9375rem] text-ink transition-colors focus:border-caution focus:ring-0 data-placeholder:text-ink-3"
+            >
               <SelectValue placeholder={placeholder} />
             </SelectTrigger>
-            <SelectContent className="bg-gray-800 border-gray-600 text-white">
+
+            <SelectContent className="border border-rule-strong bg-paper-raised p-0">
               <SelectGroup>
                 {options.map((option) => (
                   <SelectItem
                     key={option.value}
                     value={option.value}
-                    className="focus:bg-gray-600 focus:text-white "
+                    className="cursor-pointer border-b border-rule px-3 py-2.5 font-sans text-[0.9375rem] text-ink last:border-b-0 focus:bg-shoal-1 focus:text-ink"
                   >
                     {option.label}
                   </SelectItem>
@@ -53,7 +58,11 @@ const SelectField = ({
         )}
       />
 
-      {error && <p className="text-sm text-red-500">{error.message}</p>}
+      {error ? (
+        <p className="mt-1.5 font-text text-[0.8125rem] italic leading-snug text-caution">
+          {error.message}
+        </p>
+      ) : null}
     </div>
   );
 };

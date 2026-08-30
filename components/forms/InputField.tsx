@@ -1,39 +1,50 @@
-import React from "react";
-import { Label } from "../ui/label";
-import { Input } from "../ui/input";
-import { cn } from "@/lib/utils";   // cn is usually a utility function for combining CSS/Tailwind classes conditionally.
+import { cn } from "@/lib/utils";
 
-const InputField = ({   // this creates a reusable component called InputField
-  // Bellow are the props it receives from where the component is called
- // these are the individual values for the InputField
-  name,           // ex/- email 
-  label,          // Email
-  placeholder,    // Enter your Email
-  type = "text",  // text is default type 
-  register,       
+// A printed blank on a form: ruled underneath only, its label above it and
+// its error stated in the accent ink
+const InputField = ({
+  name,
+  label,
+  placeholder,
+  type = "text",
+  register,
   error,
   validation,
   disabled,
   value,
-}: FormInputProps) => {    // FormInputProps means the props must follow the Typescript Interface created in global.d.ts  (validation)
+}: FormInputProps) => {
   return (
-    <div className="space-y-2">
-      <Label htmlFor={name} className="form-label">
+    <div>
+      <label
+        htmlFor={name}
+        className="apparatus mb-1.5 block text-ink"
+      >
         {label}
-      </Label>
-      <Input
-      // Passing props to the actual inputs
-        type={type}
+      </label>
+
+      <input
         id={name}
+        type={type}
         placeholder={placeholder}
         disabled={disabled}
         value={value}
-        className={cn("form-input", {                       //cause of cn this means always apply 'from-input'
-          "opacity-50 cursor-not-allowed": disabled,         //  but only apply 'opacity-50 cursor-not-allowed' if disabled is true.
-        })}
-        {...register(name, validation)} // this is from React Hook Form(RHF) | ... -> spread operator | register() gives RHF the info to track this input
+        aria-invalid={error ? "true" : undefined}
+        aria-describedby={error ? `${name}-error` : undefined}
+        className={cn(
+          "field",
+          disabled && "cursor-not-allowed opacity-50",
+        )}
+        {...register(name, validation)}
       />
-      {error && <p className="text-sm text-red-500">{error.message}</p>}   {/*If error exist show error.message else nothing*/}
+
+      {error ? (
+        <p
+          id={`${name}-error`}
+          className="mt-1.5 font-text text-[0.8125rem] italic leading-snug text-caution"
+        >
+          {error.message}
+        </p>
+      ) : null}
     </div>
   );
 };

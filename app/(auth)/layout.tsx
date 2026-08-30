@@ -3,6 +3,9 @@ import Image from "next/image";
 import { auth } from "@/lib/auth/auth";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
+import ChartShell from "@/components/chart/ChartShell";
+import NightLight from "@/components/NightLight";
+import { CompassRose } from "@/components/chart/Apparatus";
 
 const Layout = async ({ children }: { children: React.ReactNode }) => {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -10,65 +13,72 @@ const Layout = async ({ children }: { children: React.ReactNode }) => {
   if (session?.user) redirect("/");
 
   return (
-    <main className="auth-layout text-gray-400">
-      <section className="auth-left-section scrollbar-hide-default mt-5 mb-5">
-        <Link href="/" className="flex items-center gap-2">
-          <Image
-            src="/favicon.ico"
-            alt="StockLens logo"
-            width={32}
-            height={32}
-            className="h-8 w-8 cursor-pointer"
-          />
-          <span className="text-xl font-semibold text-white">StockLens</span>
-        </Link>
-
-        <div className="pb-6 lg:pb-8 flex-1">{children}</div>
-      </section>
-
-      <section className="auth-right-section">
-        <div className="z-10 relative lg:mt-4 lg:mb-16">
-          <blockquote className="auth-blockquote">
-            StockLens turned my portfolio into a winning list. The alerts are
-            spot on, and I feel more confident making moves in the market.
-          </blockquote>
-          <div className="flex items-center justify-between">
-            <div>
-              <cite className="auth-testimonial-author">- Ethan B.</cite>
-              <p className="max-md:text-xs text-gray-500">Retail Investor</p>
-            </div>
-            <div className="flex items-center gap-0.5">
-              {Array.from({ length: 5 }).map((_, index) => (
-                <svg
-                  key={index}
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="size-6"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1-.321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z"
-                  />
-                </svg>
-              ))}
-            </div>
+    // A different seed: the sign-in sheet shows a different stretch of water
+    // from the one inside the product
+    <ChartShell seed={19041215}>
+      <main className="flex min-h-screen flex-col lg:flex-row">
+        {/* The form. Printed on the sheet, not floating in a card. */}
+        <section className="flex w-full flex-col border-rule-strong bg-paper/90 px-6 backdrop-blur-md md:px-12 lg:w-[46%] lg:border-r xl:px-16">
+          <div className="flex items-center justify-between gap-4 py-6">
+            <Link
+              href="/"
+              className="group flex items-center gap-3 focus:outline-none focus-visible:outline-1 focus-visible:outline-caution"
+            >
+              <CompassRose
+                size={26}
+                className="text-water transition-transform duration-500 ease-out group-hover:rotate-45"
+              />
+              <span className="chart-title text-[1.25rem] uppercase tracking-[0.18em]">
+                StockLens
+              </span>
+            </Link>
+            <NightLight />
           </div>
-        </div>
-        <div className="flex-1 relative">
-          <Image
-            src="/assets/images/dashboard-f.png"
-            alt="Dashboard Preview"
-            width={1440}
-            height={1150}
-            className="auth-dashboard-preview absolute top-0"
-          ></Image>
-        </div>
-      </section>
-    </main>
+
+          <div className="flex flex-1 flex-col justify-center py-8">
+            <div className="w-full max-w-[30rem]">{children}</div>
+          </div>
+        </section>
+
+        {/* The plate: the sheet this account gets you, mounted and captioned. */}
+        <section className="relative hidden w-full flex-col justify-center overflow-hidden px-12 py-16 lg:flex lg:w-[54%] xl:px-20">
+          <figure className="relative z-10 max-w-2xl">
+            <blockquote className="font-text text-[clamp(1.375rem,2.3vw,1.875rem)] italic leading-snug text-ink">
+              StockLens turned my portfolio into a winning list. The alerts are
+              spot on, and I feel more confident making moves in the market.
+            </blockquote>
+            <figcaption className="mt-6 flex items-baseline gap-3">
+              <span
+                aria-hidden="true"
+                className="h-px w-10 translate-y-[-0.3em] bg-rule-strong"
+              />
+              <span className="apparatus text-ink">Ethan B.</span>
+              <span className="apparatus text-ink-3">Retail investor</span>
+            </figcaption>
+          </figure>
+
+          <figure className="relative z-10 mt-14 max-w-3xl">
+            <div className="border border-rule-strong bg-paper-raised p-2 shadow-[0_28px_70px_-32px_rgba(0,0,0,0.55)]">
+              {/* Provenance: a screenshot of this build's own dashboard,
+                  captured at 1440x900 @2x. The previous asset showed the
+                  pre-redesign dark UI and contradicted the page it sat on. */}
+              <Image
+                src="/assets/images/dashboard-soundings.png"
+                alt="The StockLens dashboard: the volatility threshold control and its legend beside live market data panels"
+                width={2880}
+                height={1800}
+                className="h-auto w-full border border-rule"
+                priority
+              />
+            </div>
+            <figcaption className="apparatus mt-3 flex items-baseline justify-between gap-4">
+              <span>Panel I — the dashboard after signing in</span>
+              <span className="text-ink-3">StockLens</span>
+            </figcaption>
+          </figure>
+        </section>
+      </main>
+    </ChartShell>
   );
 };
 

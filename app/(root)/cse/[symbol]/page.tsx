@@ -100,7 +100,7 @@ export default async function CseStockDetails({
             <StockLogo src={logo} alt={company} className="h-12 w-12" />
             <div>
               <h1 className="watchlist-title">{company}</h1>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-ink-3">
                 {symbol} · Colombo Stock Exchange
               </p>
               <div className="mt-3 flex flex-wrap items-baseline gap-3">
@@ -110,7 +110,7 @@ export default async function CseStockDetails({
                 <span
                   className={cn(
                     "text-lg",
-                    isUp ? "text-green-500" : "text-red-500",
+                    isUp ? "text-rising" : "text-falling",
                   )}
                 >
                   {typeof change === "number"
@@ -119,7 +119,7 @@ export default async function CseStockDetails({
                   ({formatChangePercent(changePercent)})
                 </span>
               </div>
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm text-ink-3">
                 {isOpen ? "Last traded" : "Last session close"} ·{" "}
                 {formatColomboTime(security?.lastTradedTime)} Colombo time
               </p>
@@ -184,7 +184,7 @@ export default async function CseStockDetails({
                         <td
                           className={cn(
                             "table-cell px-4 py-2",
-                            rowUp ? "text-green-500" : "text-red-500",
+                            rowUp ? "text-rising" : "text-falling",
                           )}
                         >
                           {formatChangePercent(trade.changePercentage)}

@@ -40,7 +40,7 @@ export default function CseMoversList({
       {rows.length === 0 ? (
         <p className="cse-panel-empty">{emptyLabel}</p>
       ) : (
-        <ul className="divide-y divide-gray-600">
+        <ul className="divide-y divide-rule">
           {rows.slice(0, 8).map((row) => {
             const name = names[row.symbol?.toUpperCase()] ?? row.symbol;
             const isUp = (row.changePercentage ?? 0) >= 0;
@@ -57,17 +57,17 @@ export default function CseMoversList({
                   </div>
                   <div className="text-right shrink-0">
                     {typeof row.price === "number" && (
-                      <p className="text-gray-100">
+                      <p className="text-ink">
                         {formatPrice(row.price, "LKR")}
                       </p>
                     )}
                     {typeof row.changePercentage === "number" && (
-                      <p className={cn(isUp ? "text-green-500" : "text-red-500")}>
+                      <p className={cn(isUp ? "text-rising" : "text-falling")}>
                         {formatChangePercent(row.changePercentage)}
                       </p>
                     )}
                     {typeof row.shareVolume === "number" && (
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-ink-3">
                         {formatCompactNumber(row.shareVolume)} shares
                       </p>
                     )}
