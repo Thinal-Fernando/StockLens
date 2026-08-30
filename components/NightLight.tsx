@@ -1,16 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 
 // Night light. A chart table is lit red at night so the navigator keeps their
 // dark adaptation
+const subscribeNever = () => () => {};
+
 export default function NightLight({ className }: { className?: string }) {
   const { resolvedTheme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => setMounted(true), []);
+  // resolvedTheme is unknown on the server, so the first paint has to match
+  // what was rendered there and correct itself once hydrated
+  const mounted = useSyncExternalStore(
+    subscribeNever,
+    () => true,
+    () => false,
+  );
 
   const night = mounted && resolvedTheme === "dark";
 

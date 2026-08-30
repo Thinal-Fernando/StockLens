@@ -48,10 +48,12 @@ const CountrySelect = ({
   value,
   onChange,
   invalid,
+  listId,
 }: {
   value: string;
   onChange: (value: string) => void;
   invalid?: boolean;
+  listId: string;
 }) => {
   const [open, setOpen] = useState(false);
   const countries = countryList().getData();
@@ -65,6 +67,7 @@ const CountrySelect = ({
             type="button"
             role="combobox"
             aria-expanded={open}
+            aria-controls={listId}
             aria-invalid={invalid ? "true" : undefined}
             className={cn(
               "flex w-full items-center justify-between gap-3 border-0 border-b bg-transparent px-0.5 py-2 text-left transition-colors focus:outline-none focus-visible:border-caution",
@@ -89,6 +92,7 @@ const CountrySelect = ({
       </PopoverTrigger>
 
       <PopoverContent
+        id={listId}
         align="start"
         className="w-(--anchor-width) min-w-64 border border-rule-strong bg-paper-raised p-0"
       >
@@ -193,6 +197,7 @@ export const CountrySelectField = <T extends FieldValues>({
             value={field.value}
             onChange={field.onChange}
             invalid={Boolean(error)}
+            listId={`${name}-country-list`}
           />
         )}
       />

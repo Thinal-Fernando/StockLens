@@ -93,8 +93,6 @@ export default function DepthField({
   const rafRef = useRef<number | null>(null);
   const redrawRef = useRef<(() => void) | null>(null);
 
-  depthRef.current = depth;
-
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -369,8 +367,9 @@ export default function DepthField({
     };
   }, [seed, showSoundings]);
 
-  // Redraw immediately when the rail moves, without restarting the survey
+  // Redraw when the rail moves, without restarting the survey
   useEffect(() => {
+    depthRef.current = depth;
     redrawRef.current?.();
   }, [depth]);
 
