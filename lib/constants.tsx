@@ -1,7 +1,8 @@
 export const NAV_ITEMS = [
   { href: "/", label: "Dashboard" },
+  { href: "/cse", label: "Sri Lanka" },
   { href: "/search", label: "Search" },
-  // { href: '/watchlist', label: 'Watchlist' },
+  { href: "/watchlist", label: "Watchlist" },
 ];
 
 // Sign-up form select options
@@ -337,3 +338,43 @@ export const WATCHLIST_TABLE_HEADER = [
   "Alert",
   "Action",
 ];
+
+/**
+ * CSE's own (undocumented, unauthenticated) JSON API. Every endpoint is
+ * POST-only — a GET returns 405 — takes form-encoded bodies, and requires the
+ * headers below. It sends no CORS headers, so these calls are server-only.
+ */
+export const CSE_API_BASE = "https://www.cse.lk/api";
+
+export const CSE_REQUEST_HEADERS: Record<string, string> = {
+  "Content-Type": "application/x-www-form-urlencoded",
+  Referer: "https://www.cse.lk/",
+  Origin: "https://www.cse.lk",
+  "User-Agent":
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+};
+
+/** `logoUrl` fields are relative to this CDN. www.cse.lk/cmt/… 404s. */
+export const CSE_LOGO_BASE = "https://cdn.cse.lk/cmt/";
+
+/** Colombo trades 09:30–14:30 local (UTC+5:30), Mon–Fri. */
+export const CSE_TIMEZONE = "Asia/Colombo";
+
+export const CSE_MARKET_TABLE_HEADER = [
+  "Company",
+  "Symbol",
+  "Price",
+  "Change",
+  "High / Low",
+  "Volume",
+  "Turnover",
+  "Market Cap",
+] as const;
+
+export type CseSortKey =
+  | "name"
+  | "price"
+  | "percentageChange"
+  | "sharevolume"
+  | "turnover"
+  | "marketCap";

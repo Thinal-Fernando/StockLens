@@ -122,6 +122,7 @@ export const searchStocks = cache(
             exchange,
             type,
             logo,
+            market: "US",
             isInWatchlist: false,
           };
           return item;

@@ -14,6 +14,7 @@ export default function WatchlistButton({
   symbol,
   company,
   isInWatchlist,
+  market = "US",
   showTrashIcon = false,
   type = "button",
   onWatchlistChange,
@@ -36,7 +37,7 @@ export default function WatchlistButton({
 
     startTransition(async () => {
       const res = next
-        ? await addToWatchlist(symbol, company)
+        ? await addToWatchlist(symbol, company, market)
         : await removeFromWatchlist(symbol);
 
       if (res.success) {

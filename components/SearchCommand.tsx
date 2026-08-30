@@ -12,7 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import StockLogo from "@/components/StockLogo";
-import { searchStocks } from "@/lib/actions/finnhub.actions";
+import { searchAllStocks } from "@/lib/actions/search.actions";
+import { stockHref } from "@/lib/utils";
 import { useDebounce } from "@/hooks/useDebounce";
 
 export default function SearchCommand({
@@ -45,7 +46,7 @@ export default function SearchCommand({
 
     setLoading(true);
     try {
-      const results = await searchStocks(searchTerm.trim());
+      const results = await searchAllStocks(searchTerm.trim());
       setStocks(results);
     } catch {
       setStocks([]);
@@ -107,10 +108,13 @@ export default function SearchCommand({
                   {isSearchMode ? "Search results" : "Popular stocks"}
                   {` `}({displayStocks?.length || 0})
                 </div>
-                {displayStocks?.map((stock, i) => (
-                  <li key={stock.symbol} className="search-item">
+                {displayStocks?.map((stock) => (
+                  <li
+                    key={`${stock.market}-${stock.symbol}`}
+                    className="search-item"
+                  >
                     <Link
-                      href={`/stocks/${stock.symbol}`}
+                      href={stockHref(stock.symbol, stock.market)}
                       onClick={handleSelectStock}
                       className="search-item-link"
                     >
