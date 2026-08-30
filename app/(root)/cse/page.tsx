@@ -59,7 +59,7 @@ export default async function CsePage() {
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="watchlist-title">Colombo Stock Exchange</h1>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-ink-3">
             Live market data from the CSE · all values in Sri Lankan rupees
           </p>
         </div>
@@ -156,7 +156,7 @@ export default async function CsePage() {
             <section className="space-y-4">
               <div>
                 <h2 className="watchlist-title">Sector indices</h2>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-ink-3">
                   CSE publishes sector performance as indices only — it exposes
                   no mapping from an individual security to its sector.
                 </p>
@@ -170,7 +170,7 @@ export default async function CsePage() {
                     return (
                       <div key={sector.sectorId} className="cse-sector-card">
                         <p className="cse-sector-name">{sector.name}</p>
-                        <p className="text-gray-100">
+                        <p className="text-ink">
                           {sector.indexValue.toLocaleString("en-US", {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2,
@@ -179,7 +179,7 @@ export default async function CsePage() {
                         <p
                           className={cn(
                             "text-sm",
-                            isUp ? "text-green-500" : "text-red-500",
+                            isUp ? "text-rising" : "text-falling",
                           )}
                         >
                           {formatChangePercent(sector.percentage)}

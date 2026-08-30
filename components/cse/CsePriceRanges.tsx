@@ -38,7 +38,7 @@ export default function CsePriceRanges({
   return (
     <div className="cse-panel">
       <h3 className="cse-panel-title">Price ranges</h3>
-      <p className="mb-4 text-sm text-gray-500">
+      <p className="mb-4 text-sm text-ink-3">
         CSE publishes no intraday price history, so these are the exchange&apos;s
         own high/low bands with the last traded price marked.
       </p>
@@ -60,8 +60,8 @@ export default function CsePriceRanges({
           return (
             <li key={range.label}>
               <div className="mb-1 flex items-baseline justify-between text-sm">
-                <span className="text-gray-400">{range.label}</span>
-                <span className="text-gray-500">
+                <span className="text-ink-2">{range.label}</span>
+                <span className="text-ink-3">
                   {formatPrice(low, "LKR")} – {formatPrice(high, "LKR")}
                 </span>
               </div>

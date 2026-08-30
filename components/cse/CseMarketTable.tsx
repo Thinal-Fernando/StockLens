@@ -83,7 +83,7 @@ export default function CseMarketTable({ securities }: CseMarketTableProps) {
         />
       </div>
 
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-ink-3">
         {rows.length} of {securities.length} securities
       </p>
 
@@ -101,7 +101,7 @@ export default function CseMarketTable({ securities }: CseMarketTableProps) {
                       <button
                         type="button"
                         onClick={() => handleSort(key)}
-                        className="inline-flex items-center gap-1 cursor-pointer hover:text-yellow-500 transition-colors"
+                        className="inline-flex items-center gap-1 cursor-pointer hover:text-caution transition-colors"
                         aria-label={`Sort by ${header}`}
                       >
                         {header}
@@ -126,7 +126,7 @@ export default function CseMarketTable({ securities }: CseMarketTableProps) {
               <tr>
                 <td
                   colSpan={CSE_MARKET_TABLE_HEADER.length}
-                  className="px-4 py-8 text-center text-gray-500"
+                  className="px-4 py-8 text-center text-ink-3"
                 >
                   No securities match “{query}”.
                 </td>
@@ -142,7 +142,7 @@ export default function CseMarketTable({ securities }: CseMarketTableProps) {
                     <td className="table-cell px-4 py-3">
                       <Link
                         href={stockHref(s.symbol, "CSE")}
-                        className="flex items-center gap-3 hover:text-yellow-500 transition-colors"
+                        className="flex items-center gap-3 hover:text-caution transition-colors"
                       >
                         <StockLogo
                           src={cseLogoUrl(s.logoUrl)}
@@ -151,7 +151,7 @@ export default function CseMarketTable({ securities }: CseMarketTableProps) {
                         <span className="truncate">{s.name}</span>
                       </Link>
                     </td>
-                    <td className="table-cell px-4 py-3 text-gray-400">
+                    <td className="table-cell px-4 py-3 text-ink-2">
                       {s.symbol}
                     </td>
                     <td className="table-cell px-4 py-3">
@@ -160,12 +160,12 @@ export default function CseMarketTable({ securities }: CseMarketTableProps) {
                     <td
                       className={cn(
                         "table-cell px-4 py-3",
-                        hasChange && (isUp ? "text-green-500" : "text-red-500"),
+                        hasChange && (isUp ? "text-rising" : "text-falling"),
                       )}
                     >
                       {formatChangePercent(s.percentageChange)}
                     </td>
-                    <td className="table-cell px-4 py-3 text-gray-400">
+                    <td className="table-cell px-4 py-3 text-ink-2">
                       {formatPrice(s.high, "LKR")} / {formatPrice(s.low, "LKR")}
                     </td>
                     <td className="table-cell px-4 py-3">

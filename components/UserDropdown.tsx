@@ -1,20 +1,16 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogOut } from "lucide-react";
 import { signOut } from "@/lib/actions/auth.actions";
 
+// The observer's mark. A survey sheet is signed by whoever took the soundings
 const UserDropdown = ({ user }: { user: User }) => {
   const router = useRouter();
 
@@ -23,51 +19,51 @@ const UserDropdown = ({ user }: { user: User }) => {
     router.push("/sign-in");
   };
 
+  const initial = (user.name?.charAt(0) || "?").toUpperCase();
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <Button
-            variant="ghost"
-            className="flex items-center gap-3 text-gray-400 hover:text-yellow-500"
-          >
-            <Avatar className="h-8 w-8">
-              <AvatarFallback className="bg-blue-500 text-yellow-9">
-                {user.name[0]}
-              </AvatarFallback>
-            </Avatar>
-            <div className="hidden md-flex flex-col items-start">
-              <span className="text-base font-medium text-gray-400">
-                {user.name}
-              </span>
-            </div>
-          </Button>
+          <button
+            type="button"
+            aria-label={`Account: ${user.name}`}
+            className="flex items-center gap-2.5 px-1.5 py-1.5 transition-colors hover:bg-shoal-1/60 focus:outline-none focus-visible:outline-1 focus-visible:outline-caution"
+          />
         }
       >
-        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow-500 text-sm font-bold text-black">
-          {user.name.charAt(0).toUpperCase()}
+        <span
+          data-figure=""
+          className="flex size-7 shrink-0 items-center justify-center border border-ink text-[0.8125rem] leading-none text-ink"
+        >
+          {initial}
         </span>
-        <span className="hidden sm:inline">{user.name}</span>
+        <span className="apparatus hidden max-w-36 truncate text-ink sm:block">
+          {user.name}
+        </span>
       </DropdownMenuTrigger>
+
       <DropdownMenuContent
         align="end"
-        className="w-auto min-w-56 max-w-[calc(100vw-1rem)]"
+        className="w-auto min-w-60 max-w-[calc(100vw-1rem)] border border-rule-strong bg-paper-raised p-0"
       >
-        <DropdownMenuGroup>
-          <DropdownMenuLabel className="text-sm text-white pb-0">
+        <div className="border-b border-rule px-4 py-3">
+          <p className="apparatus mb-1">Account</p>
+          <p className="font-text text-[0.9375rem] leading-tight text-ink">
             {user.name}
-          </DropdownMenuLabel>
-          <DropdownMenuLabel className="pt-0 break-all">
+          </p>
+          <p className="mt-0.5 break-all font-text text-[0.8125rem] italic leading-tight text-ink-2">
             {user.email}
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-        </DropdownMenuGroup>
+          </p>
+        </div>
+
+        <DropdownMenuSeparator className="m-0 h-0" />
+
         <DropdownMenuItem
           onClick={handleSignOut}
-          className=" focus:bg-transparent text-gray-50 focus:text-red-500 transition-colors cursor-pointer"
+          className="cursor-pointer px-4 py-3 transition-colors focus:bg-caution-tint focus:text-caution"
         >
-          <LogOut className="h-4 w-4 mr-2 focus:text-red-500 hidden sm:block" />
-          Logout
+          <span className="apparatus text-current">Sign out</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

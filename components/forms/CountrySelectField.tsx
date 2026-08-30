@@ -21,9 +21,6 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import countryList from "react-select-country-list";
 
@@ -35,63 +32,76 @@ type CountrySelectProps<T extends FieldValues = FieldValues> = {
   required?: boolean;
 };
 
+function CodePlate({ code }: { code: string }) {
+  return (
+    <span
+      data-figure=""
+      aria-hidden="true"
+      className="flex size-6 shrink-0 items-center justify-center border border-rule-strong text-[0.6875rem] leading-none text-water"
+    >
+      {code}
+    </span>
+  );
+}
+
 const CountrySelect = ({
   value,
   onChange,
+  invalid,
 }: {
   value: string;
   onChange: (value: string) => void;
+  invalid?: boolean;
 }) => {
   const [open, setOpen] = useState(false);
-
-  // Get country options with flags
   const countries = countryList().getData();
-
-  // Helper function to get flag emoji
-  const getFlagEmoji = (countryCode: string) => {
-    const codePoints = countryCode
-      .toUpperCase()
-      .split("")
-      .map((char) => 127397 + char.charCodeAt(0));
-    return String.fromCodePoint(...codePoints);
-  };
+  const selected = countries.find((c) => c.value === value);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
         render={
-          <Button
-            variant="outline"
+          <button
+            type="button"
             role="combobox"
             aria-expanded={open}
-            className="country-select-trigger"
-          >
-            {value ? (
-              <span className="flex items-center gap-2">
-                <span>{getFlagEmoji(value)}</span>
-                <span>{countries.find((c) => c.value === value)?.label}</span>
-              </span>
-            ) : (
-              "Select your country..."
+            aria-invalid={invalid ? "true" : undefined}
+            className={cn(
+              "flex w-full items-center justify-between gap-3 border-0 border-b bg-transparent px-0.5 py-2 text-left transition-colors focus:outline-none focus-visible:border-caution",
+              invalid ? "border-caution" : "border-rule-strong",
             )}
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-          </Button>
-        }
-      />
-      <PopoverContent
-        className="w-full p-0 bg-gray-800 border-gray-600"
-        align="start"
-      >
-        <Command className="bg-gray-800 border-gray-600">
-          <CommandInput
-            placeholder="Search countries..."
-            className="country-select-input"
           />
-          <CommandEmpty className="country-select-empty">
-            No country found.
+        }
+      >
+        {selected ? (
+          <span className="flex min-w-0 items-center gap-2.5">
+            <CodePlate code={selected.value} />
+            <span className="truncate font-sans text-[0.9375rem] text-ink">
+              {selected.label}
+            </span>
+          </span>
+        ) : (
+          <span className="font-sans text-[0.9375rem] text-ink-3">
+            Select your country
+          </span>
+        )}
+        <Caret />
+      </PopoverTrigger>
+
+      <PopoverContent
+        align="start"
+        className="w-(--anchor-width) min-w-64 border border-rule-strong bg-paper-raised p-0"
+      >
+        <Command className="bg-transparent">
+          <CommandInput
+            placeholder="Search countries…"
+            className="h-12 border-0 border-b border-rule bg-transparent px-3 font-sans text-[0.9375rem] text-ink placeholder:text-ink-3 focus:ring-0"
+          />
+          <CommandEmpty className="px-3 py-8 text-center font-text text-[0.875rem] italic text-ink-2">
+            No country under that name.
           </CommandEmpty>
-          <CommandList className="max-h-60 bg-gray-800 scrollbar-hide-default">
-            <CommandGroup className="bg-gray-800">
+          <CommandList className="max-h-64 scrollbar-hide">
+            <CommandGroup className="p-0">
               {countries.map((country) => (
                 <CommandItem
                   key={country.value}
@@ -100,18 +110,13 @@ const CountrySelect = ({
                     onChange(country.value);
                     setOpen(false);
                   }}
-                  className="country-select-item"
+                  className="flex cursor-pointer items-center gap-2.5 border-b border-rule px-3 py-2.5 last:border-b-0 data-[selected=true]:bg-shoal-1"
                 >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4 text-yellow-500",
-                      value === country.value ? "opacity-100" : "opacity-0",
-                    )}
-                  />
-                  <span className="flex items-center gap-2">
-                    <span>{getFlagEmoji(country.value)}</span>
-                    <span>{country.label}</span>
+                  <CodePlate code={country.value} />
+                  <span className="min-w-0 flex-1 truncate font-sans text-[0.9375rem] text-ink">
+                    {country.label}
                   </span>
+                  {value === country.value ? <SetMark /> : null}
                 </CommandItem>
               ))}
             </CommandGroup>
@@ -122,6 +127,48 @@ const CountrySelect = ({
   );
 };
 
+function Caret() {
+  return (
+    <svg
+      viewBox="0 0 12 12"
+      width="11"
+      height="11"
+      aria-hidden="true"
+      className="shrink-0 text-ink-3"
+    >
+      <path
+        d="M2.5 4.5 L6 8 L9.5 4.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function SetMark() {
+  return (
+    <svg
+      viewBox="0 0 12 12"
+      width="12"
+      height="12"
+      aria-hidden="true"
+      className="shrink-0 text-caution"
+    >
+      <path
+        d="M1.5 6.5 L4.5 9.5 L10.5 2.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export const CountrySelectField = <T extends FieldValues>({
   name,
   label,
@@ -130,10 +177,11 @@ export const CountrySelectField = <T extends FieldValues>({
   required = false,
 }: CountrySelectProps<T>) => {
   return (
-    <div className="space-y-2">
-      <Label htmlFor={name} className="form-label">
+    <div>
+      <label htmlFor={name} className="apparatus mb-1.5 block text-ink">
         {label}
-      </Label>
+      </label>
+
       <Controller
         name={name}
         control={control}
@@ -141,12 +189,22 @@ export const CountrySelectField = <T extends FieldValues>({
           required: required ? `Please select ${label.toLowerCase()}` : false,
         }}
         render={({ field }) => (
-          <CountrySelect value={field.value} onChange={field.onChange} />
+          <CountrySelect
+            value={field.value}
+            onChange={field.onChange}
+            invalid={Boolean(error)}
+          />
         )}
       />
-      {error && <p className="text-sm text-red-500">{error.message}</p>}
-      <p className="text-xs text-gray-500">
-        Helps us show market data and news relevant to you.
+
+      {error ? (
+        <p className="mt-1.5 font-text text-[0.8125rem] italic leading-snug text-caution">
+          {error.message}
+        </p>
+      ) : null}
+
+      <p className="mt-1.5 font-text text-[0.8125rem] italic leading-snug text-ink-2">
+        Sets which market data and news you are sent.
       </p>
     </div>
   );
