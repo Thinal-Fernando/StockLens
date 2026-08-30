@@ -1,6 +1,8 @@
 <div align="center">
 
-# 📈 StockLens
+<img src="public/logo.svg" width="96" height="96" alt="StockLens compass rose logo" />
+
+# StockLens
 
 **Track real-time stock prices, get personalized alerts, and explore detailed company insights.**
 
@@ -54,10 +56,15 @@ live market widgets from **TradingView**, company/search data from **Finnhub**, 
 email-and-password authentication via **Better Auth**, and event-driven background workflows
 powered by **Inngest** - including an AI-generated personalized welcome email.
 
+Alongside US markets, StockLens covers the **Colombo Stock Exchange (CSE)** in Sri Lanka. Indices,
+movers, sector performance and every listed security are read live from the exchange's own public
+JSON API
+
 The app is server-first (Next.js App Router + React Server Components), styled with Tailwind CSS v4
 and shadcn/ui, and deploys to Vercel.
 
 > **Disclaimer:** StockLens is an informational tool. It does not provide investment, financial, or trading advice.
+
 
 <br/>
 
@@ -85,8 +92,23 @@ Inngest cron. If you later sign up for real, the guest session is linked to your
   **Market Data** widgets embedded from TradingView.
 - **🏢 Stock Details Page** :- Symbol info, advanced candlestick chart,
   baseline chart, technical-analysis gauge, company profile, and company financials for any ticker.
-- **🔎 Command-Palette Search** :- `⌘K` / `Ctrl+K` search dialog that queries Finnhub for symbols,
-  with a debounced input and a fallback list of popular stocks.
+
+- **⭐ Watchlist** :- Follow any company and it is saved to your account
+
+- **🇱🇰 Colombo Stock Exchange** :- A full Sri Lanka section reading live from the CSE's own 
+  JSON API at `cse.lk`: ASPI and S&P SL20 index cards, market
+  status, turnover and trade counts, top gainers / losers / most active, sector indices, and every
+  listed security in one sortable, searchable table. Each ticker gets a `/cse/[symbol]` page with
+  company info, day and 52-week price ranges, and recent trades. CSE symbols are merged into ⌘K
+  search next to US results and can be saved to the same watchlist, priced in **LKR**. Responses
+  are cached server-side (60s for live data, 1h for reference data), and one market-wide
+  `tradeSummary` feed backs the table, search and watchlist hydration - so there is no per-symbol
+  fan-out against the exchange.
+  
+- **🔎 Command-Palette Search** :- `⌘K` / `Ctrl+K` search dialog that queries Finnhub (US) and
+  the CSE feed (Sri Lanka) in parallel and interleaves the two, with a debounced input and a
+  fallback list of popular stocks.
+
 - **✉️ Transactional Email** :- HTML email templates (welcome, news summary, price/volume alerts,
   inactive-user reminder) delivered through Nodemailer.
 - **🤖 AI-Personalized Onboarding** :- On sign-up, an Inngest function calls an Anthropic model
@@ -108,7 +130,7 @@ Inngest cron. If you later sign up for real, the guest session is linked to your
 | **Background Jobs** | [Inngest](https://www.inngest.com/) (event-driven functions + AI inference step) |
 | **Forms** | [react-hook-form](https://react-hook-form.com/), [react-select-country-list](https://www.npmjs.com/package/react-select-country-list) |
 | **Email** | [Nodemailer](https://nodemailer.com/) (Gmail transport) |
-| **Market Data** | [Finnhub API](https://finnhub.io/) (symbol search & company profiles), [TradingView Widgets](https://www.tradingview.com/widget/) (charts) |
+| **Market Data** | [Finnhub API](https://finnhub.io/) (US symbol search & company profiles), [TradingView Widgets](https://www.tradingview.com/widget/) (charts), [Colombo Stock Exchange API](https://www.cse.lk/) (Sri Lanka indices, securities & trades) |
 | **Tooling** | ESLint 9 (`eslint-config-next`), Turbopack |
 | **Hosting** | [Vercel](https://vercel.com/) |
 
@@ -123,8 +145,10 @@ flowchart TD
     subgraph Next["Next.js 16 App (Vercel)"]
         Auth["(auth) routes\nsign-in / sign-up"]
         Root["(root) routes\ndashboard + /stocks/[symbol]"]
+        Cse["(root)/cse routes\nSri Lanka overview + /cse/[symbol]"]
         Search["SearchCommand (⌘K)"]
-        Actions["Server Actions\nauth.actions / finnhub.actions"]
+        Actions["Server Actions\nauth / finnhub / watchlist"]
+        CseActions["cse.actions\nunstable_cache 60s / 1h"]
         InngestRoute["/api/inngest route"]
     end
 
@@ -132,6 +156,7 @@ flowchart TD
         Mongo[("MongoDB Atlas")]
         BetterAuth["Better Auth"]
         Finnhub["Finnhub API"]
+        CseApi["Colombo Stock Exchange\ncse.lk JSON API"]
         TradingView["TradingView Widgets"]
         Inngest["Inngest Cloud"]
         Anthropic["Anthropic (Claude)"]
@@ -140,11 +165,15 @@ flowchart TD
 
     User --> Auth
     User --> Root
+    User --> Cse
     User --> Search
     Root --> TradingView
+    Cse --> CseActions --> CseApi
     Search --> Actions --> Finnhub
+    Search -- "merged results" --> CseActions
     Auth --> Actions
     Actions --> BetterAuth --> Mongo
+    Actions -- "CSE watchlist rows" --> CseActions
     Actions -- "app/user.created" --> Inngest
     Inngest --> InngestRoute
     InngestRoute --> Anthropic
@@ -158,11 +187,21 @@ flowchart TD
 2. **Welcome email** - The `sendSignUpEmail` Inngest function receives the event, calls Claude to
    generate a personalized intro paragraph, then sends the welcome email via Nodemailer.
 3. **Search** - The `SearchCommand` dialog debounces input and calls the `searchStocks` server
-   action, which hits Finnhub (symbol search, or popular-symbol profiles when the query is empty)
-   and normalizes results to a common shape.
+   action, which fans out to Finnhub (symbol search, or popular-symbol profiles when the query is
+   empty) and the CSE feed in parallel, normalizes both to a common shape, and interleaves them so
+   Sri Lankan matches are never buried under US ones. Either side failing degrades to the other.
 4. **Charts** - Dashboard and stock-detail pages render TradingView embed widgets client-side via
    the `TradingViewWidget` component and `useTradingViewWidget` hook.
-5. **Demo mode** - `startDemoSession` calls `signInAnonymous`; the hourly `cleanup-demo-users`
+5. **Colombo Stock Exchange** - `/cse` renders on the server: `cse.actions` POSTs form-encoded
+   requests to the `cse.lk` JSON API, wrapped in `unstable_cache` (60s for live data, 1h for
+   reference data) and tagged `cse`. Every call falls back to an empty result on failure, so one
+   dead endpoint degrades a single card instead of blanking the page. `/cse/[symbol]` reads the
+   same cached feeds for company info, price ranges and detailed trades - no API key required.
+6. **Cross-market watchlist** - Watchlist rows carry a `market` flag (`US` | `CSE`). Hydration
+   prices US rows from Finnhub and resolves every CSE row from one market-wide `tradeSummary`
+   call, so a mixed watchlist costs a single extra request no matter how many Sri Lankan holdings
+   it has.
+7. **Demo mode** - `startDemoSession` calls `signInAnonymous`; the hourly `cleanup-demo-users`
    Inngest cron deletes anonymous users (and their sessions/accounts) older than 24 hours.
 
 <br/>
@@ -179,22 +218,30 @@ my-app/
 │   ├── (root)/                 # Authenticated area (redirects to /sign-in if logged out)
 │   │   ├── page.tsx            # Market dashboard
 │   │   ├── stocks/[symbol]/    # Stock details
+│   │   ├── watchlist/          # Saved companies
+│   │   ├── cse/                # Colombo Stock Exchange overview
+│   │   ├── cse/[symbol]/       # CSE security details
 │   │   └── layout.tsx
 │   ├── api/inngest/route.ts    # Inngest serve endpoint (GET/POST/PUT)
-│   ├── layout.tsx              # Root layout (fonts, Toaster, dark theme)
-│   └── globals.css
+│   ├── layout.tsx              # Root layout (fonts, Toaster, theme provider)
+│   ├── icon.svg                # Favicon (compass rose, light + dark)
+│   ├── apple-icon.png          # Apple touch icon
+│   └── globals.css             # Design tokens + component layer
 ├── components/
 │   ├── ui/                     # shadcn/ui + Base UI primitives
 │   ├── forms/                  # Reusable form fields (InputField, SelectField, …)
-│   ├── Header.tsx  NavItems.tsx  UserDropdown.tsx
+│   ├── chart/                  # Background field, threshold rail, shared marks
+│   ├── cse/                    # Colombo Stock Exchange tables and cards
+│   ├── Header.tsx  NavItems.tsx  UserDropdown.tsx  NightLight.tsx
 │   ├── SearchCommand.tsx  TradingViewWidget.tsx  WatchlistButton.tsx  StockLogo.tsx
+│   ├── WatchlistTable.tsx  NoticeToInvestors.tsx  SessionCode.tsx
 ├── database/
 │   └── mongoose.ts             # Cached Mongoose connection helper
 ├── hooks/
 │   ├── useDebounce.ts
 │   └── useTradingViewWidget.tsx
 ├── lib/
-│   ├── actions/                # "use server" actions (auth, finnhub)
+│   ├── actions/                # "use server" actions (auth, finnhub, watchlist, cse)
 │   ├── auth/auth.ts            # Better Auth instance (lazy, cached)
 │   ├── inngest/                # client, functions, prompts
 │   ├── nodemailer/             # transporter, templates
@@ -202,7 +249,9 @@ my-app/
 │   └── utils.ts                # cn() class-name helper
 ├── types/
 │   └── global.d.ts            # Global type declarations
-├── public/                     # Static assets (images, favicon)
+├── public/                     # Static assets (logo, images)
+├── DESIGN.md                   # Design system: tokens, type ramp, component rules
+├── PRODUCT.md                  # Product context: users, purpose, constraints
 ├── eslint.config.mjs
 ├── next.config.ts
 └── tsconfig.json
@@ -217,6 +266,7 @@ my-app/
 - **Node.js 20+** and **npm**
 - A **MongoDB** database (a free [MongoDB Atlas](https://www.mongodb.com/atlas) cluster works)
 - A **Finnhub** API key - free tier at [finnhub.io](https://finnhub.io/)
+- *No key needed for the Sri Lanka section* - the `cse.lk` API is public and unauthenticated
 - A **Gmail** account with an [App Password](https://support.google.com/accounts/answer/185833)
   (for sending email)
 - *(Optional for local background jobs)* the [Inngest Dev Server](https://www.inngest.com/docs/local-development)
